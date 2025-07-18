@@ -13,6 +13,13 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.modelmapper.ModelMapper;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
 import java.util.List;
 
 @Path("/orders")
@@ -66,5 +73,47 @@ public class PurchaseOrderRest {
                 .map(Response::ok)
                 .orElse(Response.status(Response.Status.NOT_FOUND))
                 .build();
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createOrder(PurchaseOrderDto orderDto) {
+        PurchaseOrder entity = mapper.map(orderDto, PurchaseOrder.class);
+        repository.persist(entity);
+        return Response.status(Response.Status.CREATED).entity(map(entity)).build();
+    }
+
+    @PUT
+    @Path("/{orderId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateOrder(@PathParam("orderId") Integer orderId, PurchaseOrderDto orderDto) {
+        return repository.findByIdOptional(orderId)
+                .map(existing -> {
+                    mapper.map(orderDto, existing);
+                    return Response.ok(map(existing)).build();
+                })
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
+    }
+
+    @DELETE
+    @Path("/{orderId}")
+    public Response deleteOrder(@PathParam("orderId") Integer orderId) {
+        return repository.findByIdOptional(orderId)
+                .map(order -> {
+                    repository.delete(order);
+                    return Response.noContent().build();
+                })
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<PurchaseOrderDto> getAllOrders() {
+        return repository.listAll()
+                .stream()
+                .map(this::map)
+                .toList();
     }
 }

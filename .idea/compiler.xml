@@ -16,4 +16,29 @@
       </profile>
     </annotationProcessing>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="app-authors" options="-Xlint:-processing -parameters" />
+      <module name="app-authors.integrationTest" options="-Xlint:-processing -parameters" />
+      <module name="app-authors.main" options="-Xlint:-processing -parameters" />
+      <module name="app-authors.native-test" options="-Xlint:-processing -parameters" />
+      <module name="app-authors.quarkus-generated-sources" options="-Xlint:-processing -parameters" />
+      <module name="app-authors.quarkus-test-generated-sources" options="-Xlint:-processing -parameters" />
+      <module name="app-authors.test" options="-Xlint:-processing -parameters" />
+      <module name="app-books" options="-Xlint:-processing -parameters" />
+      <module name="app-books.integrationTest" options="-Xlint:-processing -parameters" />
+      <module name="app-books.main" options="-Xlint:-processing -parameters" />
+      <module name="app-books.native-test" options="-Xlint:-processing -parameters" />
+      <module name="app-books.quarkus-generated-sources" options="-Xlint:-processing -parameters" />
+      <module name="app-books.quarkus-test-generated-sources" options="-Xlint:-processing -parameters" />
+      <module name="app-books.test" options="-Xlint:-processing -parameters" />
+      <module name="app-customers" options="-Xlint:-processing -parameters" />
+      <module name="app-customers.integrationTest" options="-Xlint:-processing -parameters" />
+      <module name="app-customers.main" options="-Xlint:-processing -parameters" />
+      <module name="app-customers.native-test" options="-Xlint:-processing -parameters" />
+      <module name="app-customers.quarkus-generated-sources" options="-Xlint:-processing -parameters" />
+      <module name="app-customers.quarkus-test-generated-sources" options="-Xlint:-processing -parameters" />
+      <module name="app-customers.test" options="-Xlint:-processing -parameters" />
+    </option>
+  </component>
 </project>

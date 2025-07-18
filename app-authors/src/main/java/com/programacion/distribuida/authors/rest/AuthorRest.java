@@ -80,5 +80,39 @@ public class AuthorRest {
                     return obj;
                 }).toList();
     }
+
+    // Agregar un nuevo autor
+    @POST
+    public Response create(Author author) {
+        authorRepository.persist(author);
+        return Response.status(Response.Status.CREATED).entity(author).build();
+    }
+
+    // Actualizar un autor existente
+    @PUT
+    @Path("/{id}")
+    public Response update(@PathParam("id") Integer id, Author author) {
+        var existing = authorRepository.findByIdOptional(id);
+        if (existing.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        Author toUpdate = existing.get();
+        toUpdate.setName(author.getName());
+        // Actualiza otros campos según sea necesario
+        authorRepository.persist(toUpdate);
+        return Response.ok(toUpdate).build();
+    }
+
+    // Eliminar un autor
+    @DELETE
+    @Path("/{id}")
+    public Response delete(@PathParam("id") Integer id) {
+        var existing = authorRepository.findByIdOptional(id);
+        if (existing.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        authorRepository.delete(existing.get());
+        return Response.noContent().build();
+    }
 }
 

@@ -48,58 +48,30 @@ public class BookRest {
 
     @GET
     @Path("/{isbn}")
-    public Response findByIsbn(@PathParam("isbn") String isbn) {
-        var stork = Stork.getInstance();
+    public Uni<Response> findByIsbn(@PathParam("isbn") String isbn) {
+        // Buscar el libro de forma reactiva
+        return Uni.createFrom().item(() -> booksRepository.findByIdOptional(isbn))
+                .onItem().transformToUni(optional -> {
+                    if (optional.isEmpty()) {
+                        return Uni.createFrom().item(Response.status(Response.Status.NOT_FOUND).build());
+                    }
 
-        //--listar servicios
-        Map<String, Service> services = stork.getServices();
+                    BookDto ret = new BookDto();
+                    mapper.map(optional.get(), ret);
 
-        services.entrySet()
-                .stream()
-                .forEach(it -> {
-                    System.out.println(it.getKey());
+                    // Llamar al cliente para obtener los autores
+                    return Uni.createFrom().item(() -> client.findByBook(isbn))
+                            .onItem().transform(authors -> {
+                                List<String> names = authors.stream()
+                                        .map(AuthorDto::getName)
+                                        .toList();
 
-                    Multi<ServiceInstance> instances = it.getValue()
-                            .getInstances()
-                            .onItem()
-                            .transformToMulti(items -> Multi.createFrom().iterable(items));
-
-                    instances.subscribe()
-                            .with(item->{
-                                System.out.println("  " + item.getHost() + ":" + item.getPort());
+                                ret.setAuthors(names);
+                                return Response.ok(ret).build();
                             });
                 });
-
-        //--seleccionar una instancia
-        Service service = stork.getService("authors-api");
-        Uni<ServiceInstance> instance = service.selectInstance();
-        instance
-                .subscribe()
-                .with(inst -> {
-                    System.out.println("**Instancia seleccionada: " + inst.getHost() + ":" + inst.getPort());
-                });
-
-
-        BookDto ret = new BookDto();
-
-        //1. buscar el libro
-        var obj = booksRepository.findByIdOptional(isbn);
-        if (obj.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .build();
-        }
-        mapper.map(obj.get(), ret);
-
-        var authors = client.findByBook(isbn)
-                .stream()
-                .map(AuthorDto::getName)
-                .toList();
-
-        ret.setAuthors(authors);
-
-        return Response.ok(ret)
-                .build();
     }
+
 
     @GET
     public List<BookDto> findAll() {
@@ -121,15 +93,34 @@ public class BookRest {
                 .toList();
     }
 
-    @POST
-    public void insert(Book book) {
+   @POST
+    public Response insert(Book book) {
         booksRepository.persist(book);
+        return Response.status(Response.Status.CREATED).entity(book).build();
     }
 
+    // Update an existing book
     @PUT
     @Path("/{isbn}")
-    public void update(@PathParam("isbn") String isbn, Book book) {
+    public Response update(@PathParam("isbn") String isbn, Book book) {
+        var existing = booksRepository.findByIdOptional(isbn);
+        if (existing.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         booksRepository.update(isbn, book);
+        return Response.ok(book).build();
+    }
+
+    // Delete a book by ISBN
+    @DELETE
+    @Path("/{isbn}")
+    public Response delete(@PathParam("isbn") String isbn) {
+        var existing = booksRepository.findByIdOptional(isbn);
+        if (existing.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        booksRepository.delete(existing.get());
+        return Response.noContent().build();
     }
 }
 

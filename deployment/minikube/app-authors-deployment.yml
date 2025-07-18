@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-authors
+  labels:
+      app: app-authors
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-authors
+  template:
+    metadata:
+      labels:
+        app: app-authors
+    spec:
+      containers:
+        - name: app-authors
+          image: alhehita/app-authors:latest
+          env:
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: postgres
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: postgres
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: jdbc:postgresql://dbserver:5432/distribuida
+            - name: CONSUL_HTTP_PORT
+              value: "8080"
+            - name: CONSUL_HOST
+              value: consul
+            - name: CONSUL_PORT
+              value: "8500"
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+
+
